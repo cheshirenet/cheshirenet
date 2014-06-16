@@ -13,6 +13,8 @@ Module which produces readble name from 256-bit of random data
 from surname_hash import surname
 from female_hash import female
 from male_hash import male
+#
+import operator
 
 gendernames=[male,female]
 
@@ -30,8 +32,7 @@ def getrandom(count):
 	global data
 	if data==0:
 		raise RandError("No more random data")
-	r=data%count
-	data=data/count
+	data,r=divmod(data,count)
 	return r
 def morerandom():
 	"""
@@ -49,8 +50,7 @@ def mkword(x):
 	"""
 	count=0
 	first=x[' ']
-	for letter in first:
-		count+=len(first[letter])
+	count=reduce(operator.add,map(len,first.itervalues()))
 	i=getrandom(count)
 	for letter in sorted(first):
 		if i<len(first[letter]):
