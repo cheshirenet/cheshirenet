@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+"""
+ 	Generates hashes for the markov script.
+	Usage
+		
+		genmarkov file variable-name > modulename.py
+	
+	Reads file
+	and prints out python dictionary definition which 
+	contain possible third letter following given pair.
+
+	BUGS: non-letter characters would be counted. Multiple
+	spaces are not compressed into signle space
+"""
+import sys
+import unicodedata
+f=open(sys.argv[1],"r")
+x={}
+def addchar(a,b,c):
+	global x
+	if not a in x:
+		x[a]={}
+	if not b in x[a]:
+		x[a][b]=""
+	x[a][b]+=c
+for line in f: 
+	l=unicodedata.normalize("NFKD",line.strip().decode("utf-8")).encode("ascii","ignore").lower()
+	a = ' ';
+	b = l[0]
+	for i in l[1:]:
+		addchar(a,b,i)
+		a=b
+		b=i
+	addchar(a,b,' ')
+print sys.argv[2],'=',repr(x)
