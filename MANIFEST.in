@@ -1,0 +1,3 @@
+include *.md
+include namegen/*.names
+include namegen/genmarkov

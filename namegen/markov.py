@@ -43,7 +43,7 @@ def morerandom():
 
 def mkword(x):
 	"""
-		Compuites word from given  dictionary.
+		Computes word from given  dictionary.
 		Randomly chooses first and second letter and
 		with probabilities of their occurence after whicespace
 		and then chooses next letter until space is encountered

@@ -3,14 +3,15 @@
 """
 import Image
 import stepic
-from ctypescrypt import pbkdf2,cipher,eckey
-
+from ctypescrypt import pbkdf2,cipher,ec
+from StringIO import StringIO
+import namegen
 class Identity:
 	"""
 		Represents cheshirenet identity
 	"""
 	LEN_ENCINFO=8+32+16+16+32
-	def __init__(self,filename,password):
+	def __init__(self,filename,password,create=False):
 		"""
 			Loads cheshirenet identity from the steganographic file
 			if filename doesn't contain appropreate steganographic
@@ -22,12 +23,9 @@ class Identity:
 		if w<50 or h<50:
 			raise ValueError("image to small for userpic")
 		self.nickname=None
-		try:
-			data=stepic.decode(self.userpic)
-		except Exception:
-			return
-		if len(data)!=self.LEN_ENCINFO:
-			return
+		data=stepic.decode(self.userpic)
+		if len(data)!=self.LEN_ENCINFO and not create:
+			raise ValueError("not enoug setaganographic data")
 		self.salt=data[0:8]
 		self.key=pbkdf2.PBKDF2(self.salt,password,2000,48)
 		iv=self.key[32:48]
@@ -35,7 +33,7 @@ class Identity:
 		c=cipher.new("AES-256-CFB",key,encrypt=False,iv=iv)
 		deciphered=c.update(data[8:])
 		deciphered+=c.finish()
-		self.pkey=eckey.Eckey(deciphered[0:32]
+		self.pkey=ec.create(oid.Oid("secp256k1"),deciphered[0:32])
 		self.nf_name=UUID(bytes=deciphered[32:48]
 		self.nf_iv=deciphered[48:64]
 		self.nf_key=deciphered[64:96]
@@ -46,7 +44,7 @@ class Identity:
 			Generates new cheshirenet identity, attaching given image
 			to it.
 		"""
-		ident=Identity(filename,password)
+		ident=Identity(filename,password,create=True)
 		gen_data=rand.bytes(104,True)
 		ident.salt=gen_data[0:8]
 		ident.key=pbkdf2.PBKDF2(ident.salt,password,2000,48)
@@ -76,7 +74,9 @@ class Identity:
 		"""
 		data=rand.pseudo_bytes(104)
 		stepic.encode_inplace(self.userpic,data)
-		return self.userpic.tostring(encoder_name=self.userpic.format)
+		stream=StringIO()
+		self.userpic.save(stream,"PNG")
+		return stream.getvalue()
 
 	def nickname(self):
 		"""
