@@ -2,3 +2,4 @@ MANIFEST
 build
 dist
 namegen/*_hash.py
+*.pyc
